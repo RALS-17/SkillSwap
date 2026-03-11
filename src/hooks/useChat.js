@@ -112,19 +112,32 @@ export const useChat = (chatId = null) => {
 
   // Get all chat rooms for a user
   const getUserChats = (userId, onChatsLoaded) => {
-    const chatsRef = collection(db, 'chats');
-    const q = query(chatsRef, where('participants', 'array-contains', userId), orderBy('lastMessageTime', 'desc'));
-    
-    return onSnapshot(q, (snapshot) => {
-      const chats = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      onChatsLoaded(chats);
-    }, (err) => {
-      console.error("Error loading chats:", err);
-      setError(err.message);
-    });
+    try {
+      const chatsRef = collection(db, 'chats');
+      const q = query(chatsRef, where('participants', 'array-contains', userId));
+      
+      return onSnapshot(q, (snapshot) => {
+        const chats = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort by lastMessageTime in JavaScript instead of Firestore
+        chats.sort((a, b) => {
+          const timeA = a.lastMessageTime?.toMillis?.() || 0;
+          const timeB = b.lastMessageTime?.toMillis?.() || 0;
+          return timeB - timeA;
+        });
+        
+        onChatsLoaded(chats);
+      }, (err) => {
+        console.error("Error loading chats:", err);
+        onChatsLoaded([]); // Return empty array on error
+      });
+    } catch (err) {
+      console.error("Error setting up chat listener:", err);
+      return () => {}; // Return empty cleanup function
+    }
   };
 
   return { 

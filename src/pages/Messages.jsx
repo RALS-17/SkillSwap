@@ -18,11 +18,17 @@ const Messages = () => {
   useEffect(() => {
     if (!currentUser) return;
     
-    const unsubscribe = getUserChats(currentUser.uid, (loadedChats) => {
-      setChats(loadedChats);
-    });
+    try {
+      const unsubscribe = getUserChats(currentUser.uid, (loadedChats) => {
+        console.log('Loaded chats:', loadedChats);
+        setChats(loadedChats);
+      });
 
-    return () => unsubscribe?.();
+      return () => unsubscribe?.();
+    } catch (error) {
+      console.error('Error loading chats:', error);
+      // Continue even if there's an error - user might not have chats yet
+    }
   }, [currentUser]);
 
   // Scroll to bottom when messages change
