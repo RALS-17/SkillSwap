@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { Zap, X } from 'lucide-react';
 
 const Login = () => {
@@ -15,12 +17,41 @@ const Login = () => {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '' });
 
+  // Check if user profile is complete
+  const checkProfileAndRedirect = async (user) => {
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        // Check if profile has required fields (skills)
+        const hasSkills = userData.skillsToTeach?.length > 0 || userData.skillsToLearn?.length > 0;
+        
+        if (hasSkills) {
+          // Existing user with complete profile
+          navigate('/browse');
+        } else {
+          // User exists but profile incomplete
+          navigate('/setup');
+        }
+      } else {
+        // New user, needs to complete profile
+        navigate('/setup');
+      }
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      // Default to setup page if there's an error
+      navigate('/setup');
+    }
+  };
+
   const handleGoogle = async () => {
     setLoading(true);
     setError('');
     try {
-      await loginWithGoogle();
-      navigate('/setup');
+      const user = await loginWithGoogle();
+      await checkProfileAndRedirect(user);
     } catch (e) {
       setError('Sign-in failed. Please try again.');
       setLoading(false);
@@ -32,8 +63,8 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      await loginWithEmail(loginForm.email, loginForm.password);
-      navigate('/setup');
+      const user = await loginWithEmail(loginForm.email, loginForm.password);
+      await checkProfileAndRedirect(user);
     } catch (e) {
       setError(e.message || 'Login failed. Please try again.');
       setLoading(false);
@@ -46,6 +77,7 @@ const Login = () => {
     setError('');
     try {
       await signUpWithEmail(signupForm.email, signupForm.password, signupForm.name);
+      // New signup always goes to setup
       navigate('/setup');
     } catch (e) {
       setError(e.message || 'Sign up failed. Please try again.');

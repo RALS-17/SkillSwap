@@ -57,11 +57,12 @@ const ProfileSetup = () => {
         skillsToTeach: teachSkills,
         skillsToLearn: learnSkills,
         rating: 5.0,
+        profileComplete: true,
         createdAt: serverTimestamp(),
       };
       await setDoc(doc(db, 'users', currentUser.uid), profileData);
       setUserData(profileData);
-      navigate('/');
+      navigate('/browse');
     } catch (e) {
       console.error(e);
       setError('Failed to save profile. Please try again.');
