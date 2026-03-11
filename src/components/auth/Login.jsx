@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Zap } from 'lucide-react';
+import { Zap, X } from 'lucide-react';
 
 const Login = () => {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, signUpWithEmail, loginWithEmail } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+
+  // Form states
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '' });
 
   const handleGoogle = async () => {
     setLoading(true);
@@ -21,12 +27,36 @@ const Login = () => {
     }
   };
 
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await loginWithEmail(loginForm.email, loginForm.password);
+      navigate('/setup');
+    } catch (e) {
+      setError(e.message || 'Login failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const handleEmailSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await signUpWithEmail(signupForm.email, signupForm.password, signupForm.name);
+      navigate('/setup');
+    } catch (e) {
+      setError(e.message || 'Sign up failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-card animate-fade-up">
-
         <div className="auth-logo"><Zap size={26} /></div>
-
         <h2>Welcome back</h2>
         <p>Sign in to trade skills with your community</p>
 
@@ -46,11 +76,147 @@ const Login = () => {
           {loading ? 'Signing in…' : 'Continue with Google'}
         </button>
 
+        <div className="form-divider">
+          <span>or</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '.75rem', flexDirection: 'column' }}>
+          <button 
+            className="btn btn-outline" 
+            onClick={() => setShowLoginModal(true)}
+            style={{ width: '100%' }}
+          >
+            Login with Email
+          </button>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => setShowSignupModal(true)}
+            style={{ width: '100%' }}
+          >
+            Sign Up with Email
+          </button>
+        </div>
+
         <p style={{ fontSize: '.78rem', marginTop: '1.5rem', color: 'var(--clr-muted)' }}>
           By signing in you agree to our Terms of Service.
           No credit card required — always free.
         </p>
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="modal-overlay" onClick={() => setShowLoginModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowLoginModal(false)}>
+              <X size={20} />
+            </button>
+            <div className="modal-header">
+              <h2>Login</h2>
+              <p>Enter your credentials to access your account</p>
+            </div>
+            {error && <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>{error}</div>}
+            <form onSubmit={handleEmailLogin}>
+              <div className="form-group">
+                <label htmlFor="login-email">Email</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  className="input"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  required
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="login-password">Password</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  className="input"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  required
+                  placeholder="••••••••"
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+            <div className="auth-switch">
+              Don't have an account?
+              <button onClick={() => { setShowLoginModal(false); setShowSignupModal(true); }}>
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Signup Modal */}
+      {showSignupModal && (
+        <div className="modal-overlay" onClick={() => setShowSignupModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowSignupModal(false)}>
+              <X size={20} />
+            </button>
+            <div className="modal-header">
+              <h2>Sign Up</h2>
+              <p>Create an account to get started</p>
+            </div>
+            {error && <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>{error}</div>}
+            <form onSubmit={handleEmailSignup}>
+              <div className="form-group">
+                <label htmlFor="signup-name">Full Name</label>
+                <input
+                  id="signup-name"
+                  type="text"
+                  className="input"
+                  value={signupForm.name}
+                  onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                  required
+                  placeholder="John Doe"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="signup-email">Email</label>
+                <input
+                  id="signup-email"
+                  type="email"
+                  className="input"
+                  value={signupForm.email}
+                  onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                  required
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="signup-password">Password</label>
+                <input
+                  id="signup-password"
+                  type="password"
+                  className="input"
+                  value={signupForm.password}
+                  onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                  required
+                  placeholder="••••••••"
+                  minLength="6"
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+                {loading ? 'Creating Account...' : 'Sign Up'}
+              </button>
+            </form>
+            <div className="auth-switch">
+              Already have an account?
+              <button onClick={() => { setShowSignupModal(false); setShowLoginModal(true); }}>
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

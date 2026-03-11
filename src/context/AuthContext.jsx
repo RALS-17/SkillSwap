@@ -2,7 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithPopup, 
-  GoogleAuthProvider, 
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut 
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -60,6 +62,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signUpWithEmail = async (email, password, displayName) => {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      // Create basic user document
+      await setDoc(doc(db, 'users', result.user.uid), {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: displayName,
+        createdAt: new Date().toISOString(),
+        profileComplete: false
+      });
+      return result.user;
+    } catch (error) {
+      console.error("Error signing up with email", error);
+      throw error;
+    }
+  };
+
+  const loginWithEmail = async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error) {
+      console.error("Error logging in with email", error);
+      throw error;
+    }
+  };
+
   const logout = () => {
     return signOut(auth);
   };
@@ -69,6 +99,8 @@ export const AuthProvider = ({ children }) => {
     userData,
     setUserData, 
     loginWithGoogle,
+    signUpWithEmail,
+    loginWithEmail,
     logout,
     loading
   };
