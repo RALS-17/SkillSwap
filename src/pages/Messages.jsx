@@ -22,6 +22,12 @@ const Messages = () => {
       const unsubscribe = getUserChats(currentUser.uid, (loadedChats) => {
         console.log('Loaded chats:', loadedChats);
         setChats(loadedChats);
+        
+        // Auto-select first chat if none selected and chats exist
+        if (!selectedChat && loadedChats.length > 0) {
+          console.log('Auto-selecting first chat:', loadedChats[0]);
+          setSelectedChat(loadedChats[0]);
+        }
       });
 
       return () => unsubscribe?.();
@@ -30,6 +36,11 @@ const Messages = () => {
       // Continue even if there's an error - user might not have chats yet
     }
   }, [currentUser]);
+
+  // Debug: Log when messages change
+  useEffect(() => {
+    console.log('Messages updated:', messages.length, 'messages for chat:', selectedChat?.id);
+  }, [messages, selectedChat]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -40,12 +51,20 @@ const Messages = () => {
     e.preventDefault();
     if (!messageText.trim() || !selectedChat || loading) return;
 
+    console.log('Sending message:', {
+      chatId: selectedChat.id,
+      senderId: currentUser.uid,
+      text: messageText
+    });
+
     setLoading(true);
     try {
       await sendMessage(selectedChat.id, currentUser.uid, messageText);
+      console.log('Message sent successfully');
       setMessageText('');
     } catch (error) {
       console.error('Error sending message:', error);
+      alert('Failed to send message: ' + error.message);
     } finally {
       setLoading(false);
     }
