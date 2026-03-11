@@ -251,16 +251,35 @@
   border-radius: var(--r-xl); display: flex; flex-direction: column;
   transition: border-color var(--t-normal), transform var(--t-normal), box-shadow var(--t-normal);
   cursor: pointer; text-decoration: none;
+  overflow: visible; /* Allow avatar to overlap */
 }
 .teacher-card:hover { border-color: var(--clr-border-hover); transform: translateY(-4px); box-shadow: var(--shadow-card); }
-.tc-banner { height: 120px; background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95); position: relative; border-radius: var(--r-xl) var(--r-xl) 0 0; }
+.tc-banner { 
+  height: 120px; 
+  background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95); 
+  position: relative; 
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  flex-shrink: 0;
+}
 .tc-banner-overlay { position: absolute; inset: 0; background: linear-gradient(135deg,rgba(124,58,237,.4),rgba(236,72,153,.3)); }
-.tc-body { padding: 0 1.25rem 1.25rem; }
-.tc-avatar-wrap { margin-top: -40px; margin-bottom: 1rem; }
+.tc-body { 
+  padding: 0 1.25rem 1.25rem; 
+  position: relative;
+  z-index: 1;
+}
+.tc-avatar-wrap { 
+  margin-top: -50px; /* Pull avatar up to overlap banner */
+  margin-bottom: 1rem; 
+  text-align: left;
+}
 .tc-avatar {
-  width: 80px; height: 80px; border-radius: var(--r-full);
-  border: 4px solid var(--clr-bg); object-fit: cover;
-  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  width: 80px; 
+  height: 80px; 
+  border-radius: var(--r-full);
+  border: 4px solid var(--clr-bg); 
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  display: block;
 }
 .tc-name { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; color: var(--clr-text); }
 .tc-meta { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--clr-muted); margin-bottom: .75rem; flex-wrap: wrap; }
@@ -278,21 +297,45 @@
 
 /* ── Profile Page ── */
 .profile-cover {
-  height: 200px; border-radius: var(--r-xl) var(--r-xl) 0 0;
+  height: 220px; 
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
   background: linear-gradient(135deg,#1e1b4b,#4c1d95,#831843);
-  position: relative; overflow: hidden;
+  position: relative; 
+  overflow: visible;
 }
 .profile-cover-overlay {
   position: absolute; inset: 0;
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,0.08)'/%3E%3C/svg%3E");
 }
-.profile-card { border-radius: var(--r-xl); border: 1px solid var(--clr-border); background: var(--clr-surface); margin-bottom: 1.5rem; }
-.profile-card-body { padding: 0 2rem 2rem; }
-.profile-avatar-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: -44px; margin-bottom: 1.25rem; padding-top: 0; }
+.profile-card { 
+  border-radius: var(--r-xl); 
+  border: 1px solid var(--clr-border); 
+  background: var(--clr-surface); 
+  margin-bottom: 1.5rem; 
+  overflow: visible;
+}
+.profile-card-body { 
+  padding: 0 2rem 2rem; 
+  position: relative;
+}
+.profile-avatar-row { 
+  display: flex; 
+  align-items: flex-end; 
+  justify-content: space-between; 
+  margin-top: -60px; /* Pull avatar up to overlap banner */
+  margin-bottom: 1.25rem; 
+  padding-top: 0;
+  position: relative;
+  z-index: 2;
+}
 .profile-avatar {
-  width: 88px; height: 88px; border-radius: var(--r-full);
-  border: 4px solid var(--clr-bg-2); object-fit: cover;
-  box-shadow: var(--shadow-glow);
+  width: 120px; 
+  height: 120px; 
+  border-radius: var(--r-full);
+  border: 5px solid var(--clr-bg-2); 
+  object-fit: cover;
+  box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  display: block;
 }
 .profile-name { font-size: 1.5rem; font-weight: 800; margin-bottom: .35rem; }
 .profile-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
@@ -678,7 +721,7 @@
 /* ── Mobile: Profile Page ── */
 @media (max-width: 768px) {
   .profile-cover {
-    height: 140px;
+    height: 160px;
   }
   
   .profile-card-body {
@@ -689,6 +732,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+    margin-top: -50px; /* Adjusted for mobile */
   }
   
   .profile-avatar-row > div {
@@ -701,8 +745,8 @@
   }
   
   .profile-avatar {
-    width: 72px;
-    height: 72px;
+    width: 100px;
+    height: 100px;
   }
   
   .profile-name {
@@ -879,8 +923,21 @@
     border-radius: var(--r-lg);
   }
   
+  .tc-banner {
+    height: 100px;
+  }
+  
   .tc-body {
     padding: 0 1rem 1rem;
+  }
+  
+  .tc-avatar-wrap {
+    margin-top: -40px;
+  }
+  
+  .tc-avatar {
+    width: 70px;
+    height: 70px;
   }
   
   .tc-meta {
