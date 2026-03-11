@@ -1,107 +1,196 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useFirestore } from '../hooks/useFirestore';
-import { MessageSquare, CheckCircle2, Clock, X } from 'lucide-react';
+import { useChat } from '../hooks/useChat';
+import { MessageSquare, Send, User } from 'lucide-react';
 
 const Messages = () => {
-  const { currentUser } = useAuth();
-  const { getDocuments, updateDocument } = useFirestore('swapRequests');
-  const [tab, setTab] = useState('incoming');
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, userData } = useAuth();
+  const [chats, setChats] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [messageText, setMessageText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+  
+  // Initialize chat hook with selected chat ID
+  const { messages, sendMessage, getUserChats } = useChat(selectedChat?.id);
 
+  // Load user's chats
   useEffect(() => {
     if (!currentUser) return;
-    const load = async () => {
-      try {
-        const all = await getDocuments();
-        setRequests(all.filter(r => r.fromUserId === currentUser.uid || r.toUserId === currentUser.uid));
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
-    load();
+    
+    const unsubscribe = getUserChats(currentUser.uid, (loadedChats) => {
+      setChats(loadedChats);
+    });
+
+    return () => unsubscribe?.();
   }, [currentUser]);
 
-  const incoming = requests.filter(r => r.toUserId   === currentUser?.uid);
-  const outgoing = requests.filter(r => r.fromUserId === currentUser?.uid);
-  const displayed = tab === 'incoming' ? incoming : outgoing;
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  const update = async (id, status) => {
-    await updateDocument(id, { status });
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!messageText.trim() || !selectedChat || loading) return;
+
+    setLoading(true);
+    try {
+      await sendMessage(selectedChat.id, currentUser.uid, messageText);
+      setMessageText('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const StatusBadge = ({ status }) => {
-    const map = { pending: 'badge-yellow', accepted: 'badge-green', declined: 'badge-red', completed: 'badge-violet' };
-    return <span className={`badge ${map[status] || 'badge-yellow'}`}>{status}</span>;
+  const getOtherUserData = (chat) => {
+    const otherUserId = chat.participants.find(id => id !== currentUser.uid);
+    return chat.participantData?.[otherUserId] || { displayName: 'Unknown User', photoURL: null };
+  };
+
+  const avatarFor = (user) => {
+    return user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || 'U')}&background=7c3aed&color=fff`;
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate?.() || new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString();
   };
 
   return (
     <div className="page-main animate-fade-up">
       <h1 style={{ marginBottom: '.5rem' }}>Messages</h1>
-      <p style={{ marginBottom: '2rem' }}>Manage your incoming and outgoing swap requests.</p>
+      <p style={{ marginBottom: '2rem' }}>Chat with your skill-swap partners</p>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '.25rem', background: 'var(--clr-surface)', padding: '.25rem', borderRadius: 'var(--r-md)', border: '1px solid var(--clr-border)', width: 'fit-content', marginBottom: '1.5rem' }}>
-        {['incoming', 'outgoing'].map(t => (
-          <button
-            key={t}
-            className={`msg-tab ${tab === t ? 'active' : ''}`}
-            onClick={() => setTab(t)}
-            style={{ padding: '.45rem 1.25rem', textTransform: 'capitalize', border: 'none' }}
-          >
-            {t} {t === 'incoming' ? `(${incoming.length})` : `(${outgoing.length})`}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="loading-screen"><div className="spinner" /></div>
-      ) : displayed.length === 0 ? (
-        <div className="empty-state glass" style={{ padding: '4rem 2rem' }}>
-          <MessageSquare size={48} />
-          <h3>No {tab} requests yet</h3>
-          <p>{tab === 'incoming' ? "When someone requests a skill swap with you, it'll appear here." : 'Browse skills and send a swap request to get started!'}</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {displayed.map(req => (
-            <div key={req.id} className="glass" style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.75rem' }}>
-                    <StatusBadge status={req.status} />
-                    <span style={{ fontSize: '.8rem', color: 'var(--clr-muted)', fontWeight: 600 }}>
-                      {req.createdAt?.toDate?.().toLocaleDateString() || 'Recently'}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '1rem', marginBottom: '.35rem' }}>
-                    <span style={{ color: 'var(--clr-accent)' }}>{req.skillRequested}</span>
-                    {' ↔ '}
-                    <span style={{ color: '#f472b6' }}>{req.skillOffered}</span>
-                  </h3>
-                  {req.message && (
-                    <p style={{ fontSize: '.85rem', marginTop: '.5rem', padding: '.75rem', background: 'rgba(255,255,255,.03)', borderRadius: 'var(--r-md)', border: '1px solid var(--clr-border)' }}>
-                      "{req.message}"
-                    </p>
-                  )}
-                </div>
-
-                {tab === 'incoming' && req.status === 'pending' && (
-                  <div style={{ display: 'flex', gap: '.5rem', flexShrink: 0 }}>
-                    <button className="btn btn-danger btn-sm" onClick={() => update(req.id, 'declined')}>
-                      <X size={14} /> Decline
-                    </button>
-                    <button className="btn btn-primary btn-sm" style={{ background: 'linear-gradient(135deg,#059669,#10b981)' }} onClick={() => update(req.id, 'accepted')}>
-                      <CheckCircle2 size={14} /> Accept
-                    </button>
-                  </div>
-                )}
+      <div className="messages-layout">
+        {/* Sidebar - Chat List */}
+        <div className="msg-sidebar">
+          <div className="msg-sidebar-header">
+            <h3>Conversations</h3>
+          </div>
+          <div className="msg-list">
+            {chats.length === 0 ? (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--clr-muted)' }}>
+                <MessageSquare size={36} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+                <p style={{ fontSize: '.85rem' }}>No conversations yet</p>
+                <p style={{ fontSize: '.75rem', marginTop: '.5rem' }}>Start chatting after accepting a swap request</p>
               </div>
-            </div>
-          ))}
+            ) : (
+              chats.map(chat => {
+                const otherUser = getOtherUserData(chat);
+                return (
+                  <div
+                    key={chat.id}
+                    className={`msg-chat-item ${selectedChat?.id === chat.id ? 'active' : ''}`}
+                    onClick={() => setSelectedChat(chat)}
+                  >
+                    <img 
+                      src={avatarFor(otherUser)} 
+                      alt={otherUser.displayName}
+                      className="msg-chat-avatar"
+                    />
+                    <div className="msg-chat-info">
+                      <div className="msg-chat-name">{otherUser.displayName}</div>
+                      <div className="msg-chat-preview">{chat.lastMessage || 'No messages yet'}</div>
+                    </div>
+                    {chat.lastMessageTime && (
+                      <div className="msg-chat-time">{formatTime(chat.lastMessageTime)}</div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
-      )}
+
+        {/* Chat Area */}
+        <div className="msg-chat-area">
+          {!selectedChat ? (
+            <div className="msg-empty-chat">
+              <MessageSquare size={48} style={{ opacity: 0.3 }} />
+              <h3>Select a conversation</h3>
+              <p>Choose a conversation from the sidebar to start chatting</p>
+            </div>
+          ) : (
+            <>
+              {/* Chat Header */}
+              <div className="msg-chat-header">
+                <img 
+                  src={avatarFor(getOtherUserData(selectedChat))} 
+                  alt={getOtherUserData(selectedChat).displayName}
+                  className="msg-chat-header-avatar"
+                />
+                <div>
+                  <div className="msg-chat-header-name">{getOtherUserData(selectedChat).displayName}</div>
+                  <div className="msg-chat-header-status">Active</div>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="msg-messages-container">
+                {messages.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--clr-muted)' }}>
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                ) : (
+                  messages.map((msg, idx) => {
+                    const isOwn = msg.senderId === currentUser.uid;
+                    const showAvatar = idx === 0 || messages[idx - 1].senderId !== msg.senderId;
+                    
+                    return (
+                      <div key={msg.id} className={`msg-bubble-wrap ${isOwn ? 'own' : ''}`}>
+                        {!isOwn && showAvatar && (
+                          <img 
+                            src={avatarFor(getOtherUserData(selectedChat))} 
+                            alt="avatar"
+                            className="msg-bubble-avatar"
+                          />
+                        )}
+                        {!isOwn && !showAvatar && <div className="msg-bubble-avatar-spacer" />}
+                        <div className="msg-bubble">
+                          <div className="msg-bubble-text">{msg.text}</div>
+                          {msg.timestamp && (
+                            <div className="msg-bubble-time">{formatTime(msg.timestamp)}</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Bar */}
+              <form onSubmit={handleSendMessage} className="msg-input-bar">
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Type a message..."
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  disabled={loading}
+                />
+                <button 
+                  type="submit" 
+                  className="btn btn-primary btn-sm"
+                  disabled={!messageText.trim() || loading}
+                >
+                  <Send size={16} />
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

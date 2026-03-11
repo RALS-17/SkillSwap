@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useFirestore } from '../hooks/useFirestore';
+import { useChat } from '../hooks/useChat';
 import { MapPin, Star, MessageCircle, ArrowRightLeft, CheckCircle, BookOpen } from 'lucide-react';
 
 const LEVEL_COLOR = { beginner: 'badge-green', intermediate: 'badge-yellow', advanced: 'badge-violet' };
@@ -11,20 +12,85 @@ const Profile = () => {
   const navigate = useNavigate();
   const { currentUser, userData: me } = useAuth();
   const { getDocument, loading } = useFirestore('users');
+  const { getOrCreateChat } = useChat();
   const [profile, setProfile] = useState(null);
+  const [creatingChat, setCreatingChat] = useState(false);
   const isOwn = !userId || userId === currentUser?.uid;
 
   useEffect(() => {
     const fetch = async () => {
-      if (isOwn && me) { setProfile(me); return; }
+      if (isOwn && me) { 
+        setProfile(me); 
+        return; 
+      }
       const target = userId || currentUser?.uid;
-      if (target) { const d = await getDocument(target); setProfile(d); }
+      if (target) { 
+        const d = await getDocument(target);
+        if (d) {
+          setProfile({ ...d, uid: target }); // Ensure uid is set
+        }
+      }
     };
     fetch();
   }, [userId, currentUser, me]);
 
   const avatarSrc = (p) =>
     p?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(p?.displayName || 'U')}&background=7c3aed&color=fff`;
+
+  const handleMessageClick = async () => {
+    // Validation checks
+    if (creatingChat) {
+      console.log('Already creating chat...');
+      return;
+    }
+    
+    if (!userId) {
+      alert('Cannot start chat: User ID is missing');
+      return;
+    }
+    
+    if (!me || !currentUser) {
+      alert('Please log in to send messages');
+      return;
+    }
+    
+    if (!profile) {
+      alert('Cannot start chat: Profile data not loaded');
+      return;
+    }
+    
+    setCreatingChat(true);
+    try {
+      console.log('Creating chat between:', {
+        currentUserId: currentUser.uid,
+        targetUserId: userId,
+        currentUser: me.displayName,
+        targetUser: profile.displayName
+      });
+      
+      const chatId = await getOrCreateChat(
+        currentUser.uid,
+        userId,
+        { 
+          displayName: me.displayName || 'User', 
+          photoURL: me.photoURL || null 
+        },
+        { 
+          displayName: profile.displayName || 'User', 
+          photoURL: profile.photoURL || null 
+        }
+      );
+      
+      console.log('Chat created successfully with ID:', chatId);
+      navigate('/messages');
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      const errorMsg = error.message || 'Failed to start chat';
+      alert(`Error: ${errorMsg}. Please check console for details.`);
+    } finally {
+      setCreatingChat(false);
+    }
+  };
 
   if (loading || !profile) {
     return <div className="loading-screen"><div className="spinner" /><p>Loading profile…</p></div>;
@@ -46,10 +112,14 @@ const Profile = () => {
                 <Link to="/setup" className="btn btn-secondary btn-sm">Edit Profile</Link>
               ) : (
                 <>
-                  <button className="btn btn-secondary btn-sm" onClick={() => navigate('/messages')}>
-                    <MessageCircle size={15} /> Message
+                  <button 
+                    className="btn btn-secondary btn-sm" 
+                    onClick={handleMessageClick}
+                    disabled={creatingChat || !userId}
+                  >
+                    <MessageCircle size={15} /> {creatingChat ? 'Loading...' : 'Message'}
                   </button>
-                  <Link to={`/swap-request/${profile.id || userId}`} className="btn btn-primary btn-sm">
+                  <Link to={`/swap-request/${userId}`} className="btn btn-primary btn-sm">
                     <ArrowRightLeft size={15} /> Request Swap
                   </Link>
                 </>
