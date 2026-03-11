@@ -31,7 +31,7 @@ export const useSkills = () => {
   };
 
   // Search for users teaching a specific skill
-  const searchTeachers = async (skillId, category) => {
+  const searchTeachers = async (searchTerm, category) => {
     setLoading(true);
     try {
       // In a real production app with Algolia this would be easier
@@ -43,17 +43,45 @@ export const useSkills = () => {
       snapshot.forEach(doc => {
         const data = doc.data();
         // Check if user has skillsToTeach
-        if (data.skillsToTeach && Array.isArray(data.skillsToTeach)) {
-          const matchingSkill = data.skillsToTeach.find(s => 
-            (skillId && s.skillId === skillId) || 
-            (category && s.category === category)
-          );
+        if (data.skillsToTeach && Array.isArray(data.skillsToTeach) && data.skillsToTeach.length > 0) {
+          let shouldInclude = false;
+          let matchedSkills = [];
+
+          // If no search term provided, include all users with skills
+          if (!searchTerm && !category) {
+            shouldInclude = true;
+            matchedSkills = data.skillsToTeach;
+          } else {
+            // Filter by search term (skill name) or category
+            data.skillsToTeach.forEach(skill => {
+              let matchesSearch = true;
+              let matchesCategory = true;
+
+              // Check if skill name or skillId matches search term (case-insensitive)
+              if (searchTerm) {
+                const lowerSearch = searchTerm.toLowerCase().trim();
+                const skillNameMatch = skill.name && skill.name.toLowerCase().includes(lowerSearch);
+                const skillIdMatch = skill.skillId && skill.skillId.toLowerCase().includes(lowerSearch);
+                matchesSearch = skillNameMatch || skillIdMatch;
+              }
+
+              // Check category match
+              if (category) {
+                matchesCategory = skill.category && skill.category.toLowerCase() === category.toLowerCase();
+              }
+
+              if (matchesSearch && matchesCategory) {
+                shouldInclude = true;
+                matchedSkills.push(skill);
+              }
+            });
+          }
           
-          if (matchingSkill) {
+          if (shouldInclude) {
             teachers.push({
               id: doc.id,
               ...data,
-              matchedSkill: matchingSkill
+              matchedSkills: matchedSkills
             });
           }
         }
