@@ -248,12 +248,12 @@
 
 .teacher-card {
   background: var(--clr-surface); border: 1px solid var(--clr-border);
-  border-radius: var(--r-xl); overflow: hidden; display: flex; flex-direction: column;
+  border-radius: var(--r-xl); display: flex; flex-direction: column;
   transition: border-color var(--t-normal), transform var(--t-normal), box-shadow var(--t-normal);
   cursor: pointer; text-decoration: none;
 }
 .teacher-card:hover { border-color: var(--clr-border-hover); transform: translateY(-4px); box-shadow: var(--shadow-card); }
-.tc-banner { height: 80px; background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95); position: relative; }
+.tc-banner { height: 100px; background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95); position: relative; border-radius: var(--r-xl) var(--r-xl) 0 0; }
 .tc-banner-overlay { position: absolute; inset: 0; background: linear-gradient(135deg,rgba(124,58,237,.4),rgba(236,72,153,.3)); }
 .tc-body { padding: 0 1.25rem 1.25rem; }
 .tc-avatar-wrap { margin-top: -28px; margin-bottom: .75rem; }
@@ -278,7 +278,7 @@
 
 /* ── Profile Page ── */
 .profile-cover {
-  height: 180px; border-radius: var(--r-xl) var(--r-xl) 0 0;
+  height: 200px; border-radius: var(--r-xl) var(--r-xl) 0 0;
   background: linear-gradient(135deg,#1e1b4b,#4c1d95,#831843);
   position: relative; overflow: hidden;
 }
@@ -288,7 +288,7 @@
 }
 .profile-card { border-radius: var(--r-xl); border: 1px solid var(--clr-border); background: var(--clr-surface); margin-bottom: 1.5rem; }
 .profile-card-body { padding: 0 2rem 2rem; }
-.profile-avatar-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: -44px; margin-bottom: 1.25rem; }
+.profile-avatar-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: -44px; margin-bottom: 1.25rem; padding-top: 0; }
 .profile-avatar {
   width: 88px; height: 88px; border-radius: var(--r-full);
   border: 4px solid var(--clr-bg-2); object-fit: cover;
