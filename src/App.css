@@ -253,14 +253,14 @@
   cursor: pointer; text-decoration: none;
 }
 .teacher-card:hover { border-color: var(--clr-border-hover); transform: translateY(-4px); box-shadow: var(--shadow-card); }
-.tc-banner { height: 100px; background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95); position: relative; border-radius: var(--r-xl) var(--r-xl) 0 0; }
+.tc-banner { height: 120px; background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95); position: relative; border-radius: var(--r-xl) var(--r-xl) 0 0; }
 .tc-banner-overlay { position: absolute; inset: 0; background: linear-gradient(135deg,rgba(124,58,237,.4),rgba(236,72,153,.3)); }
 .tc-body { padding: 0 1.25rem 1.25rem; }
-.tc-avatar-wrap { margin-top: -28px; margin-bottom: .75rem; }
+.tc-avatar-wrap { margin-top: -40px; margin-bottom: 1rem; }
 .tc-avatar {
-  width: 56px; height: 56px; border-radius: var(--r-full);
-  border: 3px solid var(--clr-bg); object-fit: cover;
-  box-shadow: var(--shadow-card);
+  width: 80px; height: 80px; border-radius: var(--r-full);
+  border: 4px solid var(--clr-bg); object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
 }
 .tc-name { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; color: var(--clr-text); }
 .tc-meta { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--clr-muted); margin-bottom: .75rem; flex-wrap: wrap; }
