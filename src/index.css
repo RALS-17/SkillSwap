@@ -148,6 +148,21 @@ a  { color: inherit; text-decoration: none; }
 .btn-ghost { background: transparent; color: var(--clr-muted); }
 .btn-ghost:hover:not(:disabled) { color: var(--clr-text); background: var(--clr-surface); }
 
+/* Icon Button */
+.btn-icon {
+  padding: .5rem;
+  background: transparent;
+  color: var(--clr-text);
+  border: 1px solid var(--clr-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon:hover:not(:disabled) {
+  background: var(--clr-surface);
+  border-color: var(--clr-border-hover);
+}
+
 /* Danger */
 .btn-danger { background: rgba(248,113,113,.15); color: var(--clr-danger); border: 1px solid rgba(248,113,113,.3); }
 .btn-danger:hover { background: rgba(248,113,113,.25); }

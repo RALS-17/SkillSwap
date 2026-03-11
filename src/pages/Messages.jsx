@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useChat } from '../hooks/useChat';
-import { MessageSquare, Send, User } from 'lucide-react';
+import { MessageSquare, Send, User, ArrowLeft } from 'lucide-react';
 
 const Messages = () => {
   const { currentUser, userData } = useAuth();
@@ -9,10 +9,20 @@ const Messages = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
   const messagesEndRef = useRef(null);
   
   // Initialize chat hook with selected chat ID
   const { messages, sendMessage, getUserChats } = useChat(selectedChat?.id);
+
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load user's chats
   useEffect(() => {
@@ -23,8 +33,8 @@ const Messages = () => {
         console.log('Loaded chats:', loadedChats);
         setChats(loadedChats);
         
-        // Auto-select first chat if none selected and chats exist
-        if (!selectedChat && loadedChats.length > 0) {
+        // Auto-select first chat if none selected and chats exist (desktop only)
+        if (!selectedChat && loadedChats.length > 0 && !isMobileView) {
           console.log('Auto-selecting first chat:', loadedChats[0]);
           setSelectedChat(loadedChats[0]);
         }
@@ -35,7 +45,7 @@ const Messages = () => {
       console.error('Error loading chats:', error);
       // Continue even if there's an error - user might not have chats yet
     }
-  }, [currentUser]);
+  }, [currentUser, isMobileView]);
 
   // Debug: Log when messages change
   useEffect(() => {
@@ -91,12 +101,16 @@ const Messages = () => {
     return date.toLocaleDateString();
   };
 
+  const handleBackToList = () => {
+    setSelectedChat(null);
+  };
+
   return (
     <div className="page-main animate-fade-up">
       <h1 style={{ marginBottom: '.5rem' }}>Messages</h1>
       <p style={{ marginBottom: '2rem' }}>Chat with your skill-swap partners</p>
 
-      <div className="messages-layout">
+      <div className={`messages-layout ${selectedChat && isMobileView ? 'chat-active' : ''}`}>
         {/* Sidebar - Chat List */}
         <div className="msg-sidebar">
           <div className="msg-sidebar-header">
@@ -138,7 +152,7 @@ const Messages = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="msg-chat-area">
+        <div className={`msg-chat-area ${selectedChat ? 'active' : ''}`}>
           {!selectedChat ? (
             <div className="msg-empty-chat">
               <MessageSquare size={48} style={{ opacity: 0.3 }} />
@@ -149,6 +163,15 @@ const Messages = () => {
             <>
               {/* Chat Header */}
               <div className="msg-chat-header">
+                {isMobileView && (
+                  <button 
+                    onClick={handleBackToList}
+                    className="btn btn-icon"
+                    style={{ marginRight: '.5rem' }}
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                )}
                 <img 
                   src={avatarFor(getOtherUserData(selectedChat))} 
                   alt={getOtherUserData(selectedChat).displayName}

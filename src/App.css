@@ -558,3 +558,369 @@
     transform: translateY(0);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Mobile: Base & Typography ── */
+@media (max-width: 768px) {
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.4rem; }
+  h3 { font-size: 1.1rem; }
+  
+  .page-main {
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* ── Mobile: Hero Section ── */
+@media (max-width: 768px) {
+  .hero {
+    min-height: 75vh;
+    padding: 3rem 1rem;
+  }
+  
+  .hero h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .hero-sub {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .hero-ctas {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .hero-ctas .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .hero-stats {
+    gap: 2rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+  }
+  
+  .hero-stat-num {
+    font-size: 1.5rem;
+  }
+  
+  /* Reduce blob size on mobile */
+  .hero-blob-1 { width: 300px; height: 300px; }
+  .hero-blob-2 { width: 250px; height: 250px; }
+  .hero-blob-3 { width: 200px; height: 200px; }
+}
+
+/* ── Mobile: Features Grid ── */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Mobile: Steps Grid ── */
+@media (max-width: 768px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .steps-grid::before {
+    display: none;
+  }
+}
+
+/* ── Mobile: Browse Page ── */
+@media (max-width: 768px) {
+  .browse-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .search-bar-wrap {
+    padding: .5rem;
+    flex-wrap: wrap;
+  }
+  
+  .search-bar-wrap input {
+    font-size: .85rem;
+    min-width: 0;
+    width: 100%;
+  }
+  
+  .search-bar-wrap .btn {
+    width: 100%;
+  }
+  
+  .category-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: .5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .cat-pill {
+    flex-shrink: 0;
+  }
+}
+
+/* ── Mobile: Profile Page ── */
+@media (max-width: 768px) {
+  .profile-cover {
+    height: 140px;
+  }
+  
+  .profile-card-body {
+    padding: 0 1.25rem 1.25rem;
+  }
+  
+  .profile-avatar-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .profile-avatar-row > div {
+    width: 100%;
+  }
+  
+  .profile-avatar-row > div > .btn,
+  .profile-avatar-row > div > a {
+    flex: 1;
+  }
+  
+  .profile-avatar {
+    width: 72px;
+    height: 72px;
+  }
+  
+  .profile-name {
+    font-size: 1.25rem;
+  }
+  
+  .profile-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+  }
+  
+  .profile-skills-section {
+    padding: 1rem;
+  }
+  
+  .profile-skill-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+  }
+  
+  /* Skills grid (I Can Teach / Want to Learn) */
+  .profile-card + div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Mobile: Messages Page ── */
+@media (max-width: 768px) {
+  .messages-layout {
+    flex-direction: column;
+    height: calc(100vh - 68px - 2rem);
+  }
+  
+  /* When chat is selected, hide sidebar */
+  .msg-sidebar {
+    width: 100%;
+    display: flex;
+  }
+  
+  .msg-chat-area {
+    width: 100%;
+    position: fixed;
+    top: 68px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: none;
+  }
+  
+  /* Show chat area when chat is selected */
+  .msg-chat-area.active {
+    display: flex;
+  }
+  
+  /* Hide sidebar when chat is active */
+  .messages-layout.chat-active .msg-sidebar {
+    display: none;
+  }
+  
+  .msg-bubble-wrap {
+    max-width: 90%;
+  }
+  
+  .msg-input-bar {
+    padding: 1rem;
+  }
+  
+  .msg-chat-header {
+    padding: 1rem;
+  }
+}
+
+/* ── Mobile: Swap Pages ── */
+@media (max-width: 768px) {
+  .swap-page,
+  .swap-details-page {
+    padding: 1rem;
+  }
+  
+  .swap-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .swap-arrow {
+    transform: rotate(90deg);
+  }
+  
+  .swap-body {
+    padding: 1.5rem;
+  }
+  
+  .swap-status-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.25rem;
+  }
+}
+
+/* ── Mobile: Auth & Modals ── */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    max-height: 95vh;
+    padding: 1.5rem;
+  }
+  
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* ── Mobile: Buttons & Forms ── */
+@media (max-width: 640px) {
+  .btn {
+    padding: .75rem 1.25rem;
+    font-size: .875rem;
+  }
+  
+  .btn-lg {
+    padding: .85rem 1.5rem;
+    font-size: .9rem;
+  }
+  
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* ── Mobile: Navbar Improvements ── */
+@media (max-width: 768px) {
+  .navbar-inner {
+    padding: 0 1rem;
+    height: 60px;
+  }
+  
+  .nav-logo {
+    font-size: 1.1rem;
+  }
+  
+  .nav-logo-icon {
+    width: 30px;
+    height: 30px;
+    font-size: .9rem;
+  }
+  
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ── Mobile: Cards & Containers ── */
+@media (max-width: 640px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .feature-card,
+  .teacher-card,
+  .swap-card {
+    border-radius: var(--r-lg);
+  }
+  
+  .tc-body {
+    padding: 0 1rem 1rem;
+  }
+  
+  .tc-meta {
+    font-size: .75rem;
+  }
+  
+  .tc-skill-tag {
+    font-size: .7rem;
+    padding: .2rem .5rem;
+  }
+}
+
+/* ── Mobile: Section Spacing ── */
+@media (max-width: 768px) {
+  .section {
+    padding: 3rem 0;
+  }
+  
+  .section-header {
+    margin-bottom: 2rem;
+  }
+  
+  .cta-banner {
+    padding: 2.5rem 1.5rem;
+  }
+}
+
+/* ── Mobile Utility Classes ── */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
